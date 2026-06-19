@@ -1,19 +1,28 @@
 import type { DatabaseInterface } from './db-interface';
 
-let db: DatabaseInterface = {} as any;
+let _db: DatabaseInterface | null = null;
 
-if (typeof window === 'undefined') {
+function getDb(): DatabaseInterface {
+  if (_db) return _db;
   if (process.env.DATABASE_URL) {
-    const pg = require('./postgres');
-    const postgresDb = pg.postgresDb ?? pg.default;
+    const { postgresDb } = require('./postgres');
     postgresDb.init().catch((err: any) => console.error('PostgreSQL init error:', err));
-    db = postgresDb;
+    _db = postgresDb;
   } else {
-    const sq = require('./sqlite');
-    db = sq.sqliteDb ?? sq.default;
+    const { sqliteDb } = require('./sqlite');
+    _db = sqliteDb;
   }
+  return _db!;
 }
 
-export { db };
+export const db = new Proxy({} as DatabaseInterface, {
+  get(_target, prop) {
+    const database = getDb();
+    const value = (database as any)[prop];
+    if (typeof value === 'function') return value.bind(database);
+    return value;
+  }
+});
+
 export default db;
 export * from './db-interface';
