@@ -1,30 +1,23 @@
 import type { DatabaseInterface } from './db-interface';
-import { jsonDb } from './json-db';
 
 let db: DatabaseInterface;
 
 const isServer = typeof window === 'undefined';
 
 if (isServer) {
-  try {
-    if (process.env.DATABASE_URL) {
-      // Production: use PostgreSQL (Neon / Railway)
-      const { postgresDb } = require('./postgres');
-      postgresDb.init().catch((err: any) => console.error('PostgreSQL init error:', err));
-      db = postgresDb;
-      console.log('Using PostgreSQL database driver.');
-    } else {
-      // Local dev: use SQLite
-      const { sqliteDb } = require('./sqlite');
-      db = sqliteDb;
-      console.log('Using SQLite database driver.');
-    }
-  } catch (err) {
-    console.warn('Failed to initialize database driver. Falling back to JSON driver.', err);
-    db = jsonDb;
+  if (process.env.DATABASE_URL) {
+    const { postgresDb } = require('./postgres');
+    postgresDb.init().catch((err: any) => console.error('PostgreSQL init error:', err));
+    db = postgresDb;
+    console.log('Using PostgreSQL database driver.');
+  } else {
+    const { sqliteDb } = require('./sqlite');
+    db = sqliteDb;
+    console.log('Using SQLite database driver.');
   }
 } else {
-  db = jsonDb;
+  // Client side — db not used directly
+  db = {} as any;
 }
 
 export { db };
