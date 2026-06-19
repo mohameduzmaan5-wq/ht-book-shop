@@ -112,67 +112,41 @@ class PostgresDatabase implements DatabaseInterface {
       );
     `);
 
+    // Clear demo data if old admin exists, replace with real admin
+    const demoAdmin = await queryOne("SELECT id FROM users WHERE email = 'admin@bookshop.com'");
+    if (demoAdmin) {
+      await query('DELETE FROM purchase_order_items');
+      await query('DELETE FROM purchase_orders');
+      await query('DELETE FROM sale_items');
+      await query('DELETE FROM sales');
+      await query('DELETE FROM stock_transfers');
+      await query('DELETE FROM branch_inventory');
+      await query('DELETE FROM expenses');
+      await query('DELETE FROM notifications');
+      await query('DELETE FROM audit_logs');
+      await query('DELETE FROM books');
+      await query('DELETE FROM branches');
+      await query('DELETE FROM suppliers');
+      await query('DELETE FROM users');
+      await query('DELETE FROM system_settings');
+    }
+
     const countRows = await query('SELECT count(*) as count FROM users');
     const count = parseInt(countRows[0]?.count ?? '0');
     if (count === 0) {
       await this.seed();
-    } else {
-      await query("UPDATE users SET password_hash = 'password' WHERE password_hash = '' OR password_hash IS NULL");
     }
   }
 
   private async seed() {
-    for (const u of initialUsers) {
-      await query(
-        'INSERT INTO users (id,email,password_hash,name,role,branch_id,is_active,avatar,created_at,updated_at) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) ON CONFLICT DO NOTHING',
-        [u.id, u.email, 'password', u.name, u.role, u.branch_id, u.is_active, u.avatar, u.created_at, u.updated_at]
-      );
-    }
-    for (const b of initialBranches) {
-      await query(
-        'INSERT INTO branches (id,name,address,phone,email,manager_id,is_active,created_at,updated_at) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9) ON CONFLICT DO NOTHING',
-        [b.id, b.name, b.address, b.phone, b.email, b.manager_id, b.is_active, b.created_at, b.updated_at]
-      );
-    }
-    for (const b of initialBooks) {
-      await query(
-        'INSERT INTO books (id,isbn,barcode,title,author,publisher,category,description,cost_price,selling_price,image_url,created_at,updated_at) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13) ON CONFLICT DO NOTHING',
-        [b.id, b.isbn, b.barcode, b.title, b.author, b.publisher, b.category, b.description, b.cost_price, b.selling_price, b.image_url, b.created_at, b.updated_at]
-      );
-    }
-    for (const i of initialInventory) {
-      await query(
-        'INSERT INTO branch_inventory (id,book_id,branch_id,quantity,reorder_level,last_restocked) VALUES ($1,$2,$3,$4,$5,$6) ON CONFLICT DO NOTHING',
-        [i.id, i.book_id, i.branch_id, i.quantity, i.reorder_level, i.last_restocked]
-      );
-    }
-    for (const t of initialTransfers) {
-      await query(
-        'INSERT INTO stock_transfers (id,book_id,from_branch_id,to_branch_id,quantity,status,requested_by,approved_by,notes,created_at,updated_at) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11) ON CONFLICT DO NOTHING',
-        [t.id, t.book_id, t.from_branch_id, t.to_branch_id, t.quantity, t.status, t.requested_by, t.approved_by, t.notes, t.created_at, t.updated_at]
-      );
-    }
-    for (const e of initialExpenses) {
-      await query(
-        'INSERT INTO expenses (id,branch_id,category,description,amount,date,created_by,created_at) VALUES ($1,$2,$3,$4,$5,$6,$7,$8) ON CONFLICT DO NOTHING',
-        [e.id, e.branch_id, e.category, e.description, e.amount, e.date, e.created_by, e.created_at]
-      );
-    }
-    for (const n of initialNotifications) {
-      await query(
-        'INSERT INTO notifications (id,user_id,type,title,message,is_read,metadata,created_at) VALUES ($1,$2,$3,$4,$5,$6,$7,$8) ON CONFLICT DO NOTHING',
-        [n.id, n.user_id, n.type, n.title, n.message, n.is_read, n.metadata, n.created_at]
-      );
-    }
-    for (const a of initialAuditLogs) {
-      await query(
-        'INSERT INTO audit_logs (id,user_id,action,entity_type,entity_id,details,ip_address,created_at) VALUES ($1,$2,$3,$4,$5,$6,$7,$8) ON CONFLICT DO NOTHING',
-        [a.id, a.user_id, a.action, a.entity_type, a.entity_id, a.details, a.ip_address, a.created_at]
-      );
-    }
+    const now = new Date().toISOString();
+    await query(
+      'INSERT INTO users (id,email,password_hash,name,role,branch_id,is_active,avatar,created_at,updated_at) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) ON CONFLICT DO NOTHING',
+      ['admin_001', 'htbookshop@gmail.com', 'ht@2005', 'HT Book Shop Admin', 'super_admin', null, true, null, now, now]
+    );
     const settings: Record<string, string> = {
-      storeName: 'BookShop ERP', currency: 'LKR', timezone: 'Asia/Colombo',
-      taxPercent: '5', receiptHeader: 'BookShop ERP - Your Reading Destination',
+      storeName: 'HT Book Shop', currency: 'Rs.', timezone: 'Asia/Colombo',
+      taxPercent: '0', receiptHeader: 'HT Book Shop',
       receiptFooter: 'Thank you for shopping with us!', showLogo: 'true',
       receiptTemplate: 'classic', receiptFont: 'monospace', receiptFontSize: '12',
       receiptShowBarcode: 'true', receiptShowCashier: 'true',

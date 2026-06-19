@@ -221,39 +221,11 @@ export default function LoginPage() {
             </motion.button>
           </form>
 
-          {/* Demo accounts */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.7, duration: 0.5 }}
-            className="mt-6"
-          >
-            <p className="text-xs text-white/30 text-center mb-3">Demo Accounts</p>
-            <div className="space-y-1.5">
-              {[
-                { label: 'Super Admin', email: 'admin@bookshop.com', color: 'text-indigo-400' },
-                { label: 'Branch Manager (Downtown)', email: 'sarah@bookshop.com', color: 'text-emerald-400' },
-                { label: 'Branch Manager (University)', email: 'james@bookshop.com', color: 'text-emerald-400' },
-                { label: 'Cashier (Downtown)', email: 'mike@bookshop.com', color: 'text-amber-400' },
-              ].map((acc) => (
-                <button
-                  key={acc.email}
-                  type="button"
-                  onClick={() => { setEmail(acc.email); setPassword('password'); }}
-                  className="w-full flex items-center justify-between px-3 py-2 rounded-lg bg-white/[0.03] border border-white/[0.06] hover:bg-white/[0.06] transition-colors group"
-                >
-                  <span className={`text-xs font-medium ${acc.color}`}>{acc.label}</span>
-                  <span className="text-[11px] text-white/30 group-hover:text-white/50 transition-colors">{acc.email}</span>
-                </button>
-              ))}
-            </div>
-            <p className="text-[11px] text-white/20 text-center mt-2">Password: <span className="text-white/35">password</span></p>
-          </motion.div>
         </div>
 
         {/* Bottom text */}
         <p className="text-center text-[11px] text-white/20 mt-6">
-          © 2026 BookShop ERP. All rights reserved.
+          © 2026 HT Book Shop. All rights reserved.
         </p>
       </motion.div>
     </div>
