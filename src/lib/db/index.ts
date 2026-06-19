@@ -1,26 +1,19 @@
 import type { DatabaseInterface } from './db-interface';
 
-let db: DatabaseInterface;
+let db: DatabaseInterface = {} as any;
 
-const isServer = typeof window === 'undefined';
-
-if (isServer) {
+if (typeof window === 'undefined') {
   if (process.env.DATABASE_URL) {
-    const { postgresDb } = require('./postgres');
+    const pg = require('./postgres');
+    const postgresDb = pg.postgresDb ?? pg.default;
     postgresDb.init().catch((err: any) => console.error('PostgreSQL init error:', err));
     db = postgresDb;
-    console.log('Using PostgreSQL database driver.');
   } else {
-    const { sqliteDb } = require('./sqlite');
-    db = sqliteDb;
-    console.log('Using SQLite database driver.');
+    const sq = require('./sqlite');
+    db = sq.sqliteDb ?? sq.default;
   }
-} else {
-  // Client side — db not used directly
-  db = {} as any;
 }
 
 export { db };
 export default db;
 export * from './db-interface';
-export * from './json-db';
