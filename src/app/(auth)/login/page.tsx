@@ -64,9 +64,6 @@ export default function LoginPage() {
     setError('');
     setLoading(true);
 
-    // Simulate network delay
-    await new Promise((r) => setTimeout(r, 800));
-
     const user = await db.getUserByEmail(email);
     if (!user) {
       setError('No account found with this email address.');
